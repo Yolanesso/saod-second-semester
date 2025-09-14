@@ -1,6 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+        // 1
+        //  \
+        //   2
+        //  / \
+        // 3   4
+        //    /
+        //   5
+        //    \
+        //     6
+
 struct vertex
 {
     int data;
@@ -37,6 +48,7 @@ void Obhod3(struct vertex *p)
         printf("%d ", p->data);
     }
 }
+
 
 void freeTree(struct vertex *p)
 {
@@ -116,7 +128,10 @@ int main()
     root -> right -> right -> left -> right -> left = NULL;
     root -> right -> right -> left -> right -> right = NULL;
 
-
+    root -> right -> right -> left -> left = (struct vertex *)malloc(sizeof(struct vertex));
+    root -> right -> right -> left -> left -> data = 7;
+    root -> right -> right -> left -> right -> left = NULL;
+    root -> right -> right -> left -> right -> right = NULL;
 
 
 
