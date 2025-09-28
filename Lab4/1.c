@@ -40,23 +40,26 @@ void DeleteVertex(struct vertex **Root, int D)
             struct vertex *r = q->left;
             struct vertex *s = q;
             
+            // Если у левого поддерева НЕТ правого ребенка
             if (r->right == NULL)
             {
-                r->right = q->right;
-                *p = r;
+                r->right = q->right; // Подвешиваем правое поддерево q к r
+                *p = r;  // Заменяем q на r
             }
-            else
+            else // У левого поддерева ЕСТЬ правый ребенок
             {
+                // Ищем САМЫЙ ПРАВЫЙ в левом поддереве
                 while (r->right != NULL)
                 {
                     s = r;
                     r = r->right;
                 }
                 
-                s->right = r->left;
-                r->left = q->left;
-                r->right = q->right;
-                *p = r;
+                s->right = r->left; // Подвешиваем левое поддерево r к s
+                r->left = q->left;  // r получает ВСЕ правое поддерево q
+                r->right = q->right;  // r получает ВСЕ правое поддерево q
+
+                *p = r; // Заменяем q на r
             }
         }
         
