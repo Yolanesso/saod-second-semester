@@ -27,6 +27,7 @@ void DeleteVertex(struct vertex **Root, int D)
     {
         struct vertex *q = *p;
         
+        //Одно поддереву
         if (q->left == NULL)
         {
             *p = q->right;
@@ -43,7 +44,7 @@ void DeleteVertex(struct vertex **Root, int D)
             // Если у левого поддерева НЕТ правого ребенка
             if (r->right == NULL)
             {
-                r->right = q->right; // Подвешиваем правое поддерево q к r
+                r->right = q->right; // Подвешиваем правое поддерево удаляемой вершины
                 *p = r;  // Заменяем q на r
             }
             else // У левого поддерева ЕСТЬ правый ребенок
@@ -56,7 +57,7 @@ void DeleteVertex(struct vertex **Root, int D)
                 }
                 
                 s->right = r->left; // Подвешиваем левое поддерево r к s
-                r->left = q->left;  // r получает ВСЕ правое поддерево q
+                r->left = q->left;  // r получает ВСЕ левое поддерево q
                 r->right = q->right;  // r получает ВСЕ правое поддерево q
 
                 *p = r; // Заменяем q на r
@@ -95,7 +96,7 @@ void FillRand(int size, int arr[])
 {
     for (int i = 0; i < size; i++)
     {
-        arr[i] = rand() % 100 + 1;
+        arr[i] = rand() % 1000 + 1;
     }
 }
 
