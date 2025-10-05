@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "saod-second-semester",
+			"path": ".."
+		},
+		{
+			"name": "saod-vizual",
+			"path": "../../saod-vizual"
+		}
+	],
+	"settings": {}
+}
