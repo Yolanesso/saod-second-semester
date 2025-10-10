@@ -33,7 +33,7 @@ typedef struct BSTVertex {
 
 void LL_rotate(AVLVertex** p) {
     AVLVertex* q = (*p)->left; // q - левый потомок p
-    (*p)->bal = 0; // Баланс p становится 0
+    (*p)->bal = 0; // меняем баланс с -2 до 1 -> вершина болеше не перезагружена 
     q->bal = 0; // Баланс q становится 0
     (*p)->left = q->right; // Правое поддерево q становится левым поддеревом p
     q->right = *p; // p становится правым потомком q
@@ -43,13 +43,15 @@ void LL_rotate(AVLVertex** p) {
 void LR_rotate(AVLVertex** p) {
     AVLVertex* q = (*p)->left;  // q - левый потомок p
     AVLVertex* r = q->right; // r - правый потомок q (виновник разбалансировки)
+ 
+
+    // Если r был перевешен влево, то после поворота p будет перевешен вправо.
+    if (r->bal < 0) (*p)->bal = 1; 
+    else (*p)->bal = 0; 
     
-    // Определяем новые балансы для p
-    if (r->bal < 0) (*p)->bal = 1; // Если r был перевешен влево
-    else (*p)->bal = 0; // Если r был сбалансирован или перевешен вправо
-    
-    if (r->bal > 0) q->bal = -1; // Если r был перевешен вправо
-    else q->bal = 0;  // Если r был сбалансирован или перевешен влево
+    // Если r был перевешен вправо, то q будет перевешен влево.
+    if (r->bal > 0) q->bal = -1;
+    else q->bal = 0;
     
     r->bal = 0; // r становится сбалансированным
 
@@ -102,15 +104,16 @@ int add_AVL(int data, AVLVertex** p) {
     if ((*p)->data > data) {
         if (add_AVL(data, &((*p)->left))) {
             if ((*p)->bal > 0) {
-                // Случай 1A: был правый перевес → теперь сбалансировано
+                // 1. Был +1 → стал 0
                 (*p)->bal = 0;
                 return 0;
-                                // Случай 1B: был баланс → теперь левый перевес
-
+                                
+                // 2. Был 0 → стал -1
             } else if ((*p)->bal == 0) {
                 (*p)->bal = -1;
                 return 1;
             } else {
+                // 3. Был -1 → стал -2 → балансировка!
                 if ((*p)->left->bal < 0) {
                     LL_rotate(p);
                     return 0;
@@ -125,12 +128,14 @@ int add_AVL(int data, AVLVertex** p) {
     else if ((*p)->data < data) {
         if (add_AVL(data, &((*p)->right))) {
             if ((*p)->bal < 0) {
+                // 1. Был -1 → стал 0
                 (*p)->bal = 0;
                 return 0;
-            } else if ((*p)->bal == 0) {
+            } else if ((*p)->bal == 0) { // 2. Был 0 → стал +1
                 (*p)->bal = 1;
                 return 1;
             } else {
+                // 3. Был +1 → стал +2 → балансировка!
                 if ((*p)->right->bal > 0) {
                     RR_rotate(p);
                     return 0;
