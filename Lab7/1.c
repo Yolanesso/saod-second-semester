@@ -3,7 +3,21 @@
 #include <time.h>
 #include <math.h>
 
-// Структура вершины дерева
+// Цветовые коды
+#define COLOR_RESET   "\033[0m"
+#define COLOR_RED     "\033[1;31m"
+#define COLOR_GREEN   "\033[1;32m"
+#define COLOR_YELLOW  "\033[1;33m"
+#define COLOR_BLUE    "\033[1;34m"
+#define COLOR_MAGENTA "\033[1;35m"
+#define COLOR_CYAN    "\033[1;36m"
+#define COLOR_WHITE   "\033[1;37m"
+#define COLOR_GRAY    "\033[1;90m"
+
+#define BG_BLUE       "\033[44m"
+#define BG_GREEN      "\033[42m"
+#define BG_YELLOW     "\033[43m"
+
 typedef struct Vertex {
     int data;
     struct Vertex *left;
@@ -11,7 +25,6 @@ typedef struct Vertex {
     int bal;
 } Vertex;
 
-// === ЗАДАНИЕ 5: Функция вычисления количества уровней ===
 int countLevels(Vertex *root) {
     if (root == NULL) {
         return 0;
@@ -23,7 +36,6 @@ int countLevels(Vertex *root) {
     return (leftLevels > rightLevels ? leftLevels : rightLevels) + 1;
 }
 
-// Функция для детального анализа уровней
 void analyzeLevels(Vertex *root, int currentLevel, int levelCounts[]) {
     if (root == NULL) {
         return;
@@ -34,19 +46,25 @@ void analyzeLevels(Vertex *root, int currentLevel, int levelCounts[]) {
     analyzeLevels(root->right, currentLevel + 1, levelCounts);
 }
 
-// Функция для вывода распределения вершин по уровням
 void printLevelDistribution(Vertex *root) {
     int height = countLevels(root);
     int *levelCounts = (int*)calloc(height, sizeof(int));
     
     analyzeLevels(root, 0, levelCounts);
     
-    printf("\nРаспределение вершин по уровням:\n");
-    printf("Уровень | Количество вершин\n");
-    printf("--------+------------------\n");
+    printf(COLOR_CYAN "\n┌────────────────────────────────────────┐" COLOR_RESET);
+    printf(COLOR_CYAN "\n│" COLOR_YELLOW "      Распределение вершин по уровням     " COLOR_CYAN "│" COLOR_RESET);
+    printf(COLOR_CYAN "\n├──────────┬─────────────────────────────┤" COLOR_RESET);
+    printf(COLOR_CYAN "\n│" COLOR_WHITE "  Уровень " COLOR_CYAN "│" COLOR_WHITE "     Количество вершин     " COLOR_CYAN "│" COLOR_RESET);
+    printf(COLOR_CYAN "\n├──────────┼─────────────────────────────┤" COLOR_RESET);
+    
     for (int i = 0; i < height; i++) {
-        printf("   %2d   |       %2d\n", i + 1, levelCounts[i]);
+        printf(COLOR_CYAN "\n│" COLOR_GREEN "    %2d    " COLOR_CYAN "│" COLOR_WHITE "             %2d             " COLOR_CYAN "│" COLOR_RESET, 
+               i + 1, levelCounts[i]);
     }
+    
+    printf(COLOR_CYAN "\n└──────────┴─────────────────────────────┘" COLOR_RESET);
+    printf("\n");
     
     free(levelCounts);
 }
@@ -64,6 +82,7 @@ int B2INSERT(int D, Vertex **p, int *VR, int *HR) {
     else if ((*p)->data > D) {
         if (!B2INSERT(D, &((*p)->left), VR, HR)) return 0;
         
+        //Высота увеличилась и узел был сбалансирован
         if (*VR == 1) {
             if ((*p)->bal == 0) {
                 Vertex *q = (*p)->left;
@@ -74,6 +93,7 @@ int B2INSERT(int D, Vertex **p, int *VR, int *HR) {
                 *VR = 0;
                 *HR = 1;
             }
+            //Высота увеличилась и узел уже имел перевес
             else {
                 (*p)->bal = 0;
                 *VR = 1;
@@ -81,18 +101,19 @@ int B2INSERT(int D, Vertex **p, int *VR, int *HR) {
             }
         }
         else {
-            *HR = 0;
+            *HR = 0; //Высота левого поддерева НЕ увеличилась, поэтому балансировка на этом уровне НЕ требуется
         }
     }
     else if ((*p)->data < D) {
         if (!B2INSERT(D, &((*p)->right), VR, HR)) return 0;
         
-        if (*VR == 1) {
-            (*p)->bal = 1;
-            *HR = 1;
-            *VR = 0;
+        if (*VR == 1) { 
+            (*p)->bal = 1; // Отмечаем перевес вправо
+            *HR = 1; // Требуется балансировка
+            *VR = 0; // Высота не растет дальше
         }
         else {
+        //Требуется балансировка и есть перевес вправо
             if (*HR == 1) {
                 if ((*p)->bal == 1) {
                     Vertex *q = (*p)->right;
@@ -105,7 +126,7 @@ int B2INSERT(int D, Vertex **p, int *VR, int *HR) {
                     *HR = 0;
                 }
                 else {
-                    *HR = 0;
+                    *HR = 0; // Балансировка не требуется - узел стал сбалансированным
                 }
             }
         }
@@ -121,8 +142,6 @@ int insertDBD(Vertex **root, int data) {
     int VR = 1, HR = 1;
     return B2INSERT(data, root, &VR, &HR);
 }
-
-// === АВЛ Дерево для сравнения ===
 
 void LL_rotate(Vertex **p) {
     Vertex *q = (*p)->left;
@@ -314,10 +333,12 @@ void generateUniqueRandom(int arr[], int n, int min, int max) {
 }
 
 void printGeneratedNumbers(int arr[], int n) {
-    printf("Сгенерированные случайные числа (%d элементов):\n", n);
-    printf("========================================\n");
+    printf(COLOR_CYAN "\n╔══════════════════════════════════════════════════════════════╗" COLOR_RESET);
+    printf(COLOR_CYAN "\n║" COLOR_YELLOW "         СГЕНЕРИРОВАННЫЕ СЛУЧАЙНЫЕ ЧИСЛА (%d элементов)       " COLOR_CYAN "║" COLOR_RESET, n);
+    printf(COLOR_CYAN "\n╠══════════════════════════════════════════════════════════════╣" COLOR_RESET);
+    
     for (int i = 0; i < n; i++) {
-        printf("%4d", arr[i]);
+        printf(COLOR_GREEN "%4d" COLOR_RESET, arr[i]);
         if ((i + 1) % 10 == 0) {
             printf("\n");
         }
@@ -325,25 +346,19 @@ void printGeneratedNumbers(int arr[], int n) {
             printf(" ");
         }
     }
+    
     if (n % 10 != 0) {
         printf("\n");
     }
-    printf("========================================\n\n");
-}
-
-void inOrderTraversal(Vertex *root) {
-    if (root != NULL) {
-        inOrderTraversal(root->left);
-        printf("%d ", root->data);
-        inOrderTraversal(root->right);
-    }
+    printf(COLOR_CYAN "╚══════════════════════════════════════════════════════════════╝" COLOR_RESET);
+    printf("\n\n\n");
 }
 
 void inOrderTraversalFormatted(Vertex *root, int *count) {
     if (root != NULL) {
         inOrderTraversalFormatted(root->left, count);
         
-        printf("%4d", root->data);
+        printf(COLOR_GREEN "%4d" COLOR_RESET, root->data);
         (*count)++;
         
         if (*count % 10 == 0) {
@@ -355,17 +370,6 @@ void inOrderTraversalFormatted(Vertex *root, int *count) {
         
         inOrderTraversalFormatted(root->right, count);
     }
-}
-
-void printComparisonTable(int n, int sizeDBD, int sizeAVL, 
-                         int sumDBD, int sumAVL, 
-                         int heightDBD, int heightAVL,
-                         float avgHeightDBD, float avgHeightAVL) {
-    printf("n=100     Размер   Контр. Сумма    Высота  Средн.высота\n");
-    printf("АВЛ      %-8d %-13d %-7d %-11.2f\n", 
-           sizeAVL, sumAVL, heightAVL, avgHeightAVL);
-    printf("ДБД      %-8d %-13d %-7d %-11.2f\n", 
-           sizeDBD, sumDBD, heightDBD, avgHeightDBD);
 }
 
 int main() {
@@ -382,9 +386,11 @@ int main() {
     for (int i = 0; i < NUM_VERTICES; i++) {
         insertDBD(&rootDBD, elements[i]);
     }
-    
-    printf("Обход дерева слева направо (in-order):\n");
-    printf("========================================\n");
+
+    printf(COLOR_CYAN "\n┌────────────────────────────────────────────────────────────────┐" COLOR_RESET);
+    printf(COLOR_CYAN "\n│" COLOR_YELLOW "                   ОБХОД ДЕРЕВА СЛЕВА НАПРАВО                   " COLOR_CYAN "│" COLOR_RESET);
+    printf(COLOR_CYAN "\n└────────────────────────────────────────────────────────────────┘" COLOR_RESET);
+    printf("\n");
     
     int count = 0;
     inOrderTraversalFormatted(rootDBD, &count);
@@ -393,16 +399,18 @@ int main() {
         printf("\n");
     }
     
-    printf("========================================\n");
-    printf("Всего элементов в обходе: %d\n\n", count);
+    printf(COLOR_CYAN "┌────────────────────────────────────────────────────────────────┐" COLOR_RESET);
+    printf(COLOR_CYAN "\n│" COLOR_WHITE "         Всего элементов в обходе: " COLOR_GREEN "%-3d" COLOR_WHITE "                     " COLOR_CYAN "│" COLOR_RESET, count);
+    printf(COLOR_CYAN "\n└────────────────────────────────────────────────────────────────┘" COLOR_RESET);
+    printf("\n");
     
-    // === ЗАДАНИЕ 5: Вывод информации об уровнях ДБД ===
-    printf("=== АНАЛИЗ УРОВНЕЙ ДБД ===\n");
+    printf(COLOR_CYAN "\n┌────────────────────────────────────────────────────────────────┐" COLOR_RESET);
+    printf(COLOR_CYAN "\n│" COLOR_YELLOW "                     АНАЛИЗ УРОВНЕЙ ДБД                       " COLOR_CYAN "│" COLOR_RESET);
+    printf(COLOR_CYAN "\n└────────────────────────────────────────────────────────────────┘" COLOR_RESET);
+    
     int levelsDBD = countLevels(rootDBD);
-    printf("Количество уровней в ДБД: %d\n", levelsDBD);
+    printf(COLOR_GREEN "\n🎯 Количество уровней в ДБД: " COLOR_YELLOW "%d" COLOR_RESET, levelsDBD);
     printLevelDistribution(rootDBD);
-    
-    printf("=== Сравнение характеристик ДБД и АВЛ-деревьев ===\n");
     
     Vertex *rootAVL = NULL;
     for (int i = 0; i < NUM_VERTICES; i++) {
@@ -419,6 +427,17 @@ int main() {
     int heightAVL = treeHeight(rootAVL);
     float avgHeightAVL = averageHeight(rootAVL);
     
+    printf(COLOR_CYAN "\n╔══════════════════════════════════════════════════════════════╗" COLOR_RESET);
+    printf(COLOR_CYAN "\n║" COLOR_YELLOW "                   СРАВНИТЕЛЬНАЯ ТАБЛИЦА                    " COLOR_CYAN "║" COLOR_RESET);
+    printf(COLOR_CYAN "\n╠══════════╦══════════╦══════════════╦═════════╦══════════════╣" COLOR_RESET);
+    printf(COLOR_CYAN "\n║" COLOR_WHITE "  n=100   " COLOR_CYAN "║" COLOR_WHITE "  Размер  " COLOR_CYAN "║" COLOR_WHITE " Контр. Сумма " COLOR_CYAN "║" COLOR_WHITE " Высота  " COLOR_CYAN "║" COLOR_WHITE " Средн.высота " COLOR_CYAN "║" COLOR_RESET);
+    printf(COLOR_CYAN "\n╠══════════╬══════════╬══════════════╬═════════╬══════════════╣" COLOR_RESET);
+    printf(COLOR_CYAN "\n║" COLOR_YELLOW "   АВЛ    " COLOR_CYAN "║" COLOR_GREEN " %8d " COLOR_CYAN "║" COLOR_GREEN " %12d " COLOR_CYAN "║" COLOR_GREEN " %7d " COLOR_CYAN "║" COLOR_GREEN " %12.2f " COLOR_CYAN "║" COLOR_RESET, 
+           sizeAVL, sumAVL, heightAVL, avgHeightAVL);
+    printf(COLOR_CYAN "\n║" COLOR_MAGENTA "   ДБД    " COLOR_CYAN "║" COLOR_GREEN " %8d " COLOR_CYAN "║" COLOR_GREEN " %12d " COLOR_CYAN "║" COLOR_GREEN " %7d " COLOR_CYAN "║" COLOR_GREEN " %12.2f " COLOR_CYAN "║" COLOR_RESET, 
+           sizeDBD, sumDBD, heightDBD, avgHeightDBD);
+    printf(COLOR_CYAN "\n╚══════════╩══════════╩══════════════╩═════════╩══════════════╝" COLOR_RESET);
+    printf("\n");
     freeTree(rootDBD);
     freeTree(rootAVL);
     
