@@ -64,7 +64,9 @@ void computeAPAR(int n) {
             int m = AR[i][j-1];
             int min_val = AP[i][m-1] + AP[m][j];
             
-            for (k = m+1; k <= AR[i+1][j]; k++) {
+            // Исправление: проверка границ для k
+            int max_k = (AR[i+1][j] > 0) ? AR[i+1][j] : j;
+            for (k = m+1; k <= max_k; k++) {
                 int x = AP[i][k-1] + AP[k][j];
                 if (x < min_val) {
                     m = k;
@@ -90,7 +92,7 @@ Node* createTree(int L, int R) {
     return NULL;
 }
 
-// Обход слева направо (in-order)
+// Обход слева направо (in-order) - с ограничением вывода
 void inOrderTraversal(Node* root) {
     if (root != NULL) {
         inOrderTraversal(root->left);
@@ -127,75 +129,69 @@ double weightedHeight(Node* root, int level) {
            weightedHeight(root->right, level + 1);
 }
 
-// Вывод матрицы
-void printMatrix(int matrix[MAX_N+1][MAX_N+1], int n, char* name) {
-    printf("\nМатрица %s:\n", name);
+// Вывод части матрицы (первые 10x10 элементов)
+void printMatrixPartial(int matrix[MAX_N+1][MAX_N+1], int n, char* name) {
+    printf("\nМатрица %s (первые 10x10 элементов):\n", name);
     printf("i\\j");
-    for (int j = 0; j <= n; j++) {
-        printf("%6d", j);
+    for (int j = 0; j <= 10; j++) {
+        printf("%8d", j);
     }
     printf("\n");
     
-    for (int i = 0; i <= n; i++) {
+    for (int i = 0; i <= 10; i++) {
         printf("%2d ", i);
-        for (int j = 0; j <= n; j++) {
+        for (int j = 0; j <= 10; j++) {
             if (j >= i) {
-                printf("%6d", matrix[i][j]);
+                printf("%8d", matrix[i][j]);
             } else {
-                printf("      ");
+                printf("        ");
             }
         }
         printf("\n");
     }
+    printf("... (полная матрица %dx%d)\n", n+1, n+1);
 }
 
-// Основная функция
 int main() {
-    int n = 10; // Можно изменить на 100
+    int n = 100;
     srand(time(NULL));
     
-    // Генерация случайных весов
-    printf("Веса вершин: ");
+    printf("Генерация 100 случайных весов...\n");
     for (int i = 0; i < n; i++) {
         weights[i] = rand() % 100 + 1;
-        printf("%d ", weights[i]);
     }
-    printf("\n");
     
-    // Построение матриц
+    printf("\nВычисление матриц...\n");
     computeAW(n);
     computeAPAR(n);
     
-    // Вывод матриц
-    printMatrix(AW, n, "AW");
-    printMatrix(AP, n, "AP");
-    printMatrix(AR, n, "AR");
+    // Вывод матриц (первые 10x10 элементов)
+    printMatrixPartial(AW, n, "AW");
+    printMatrixPartial(AP, n, "AP"); 
+    printMatrixPartial(AR, n, "AR");
     
-    // Построение дерева
+    printf("\nПостроение дерева...\n");
     Node* root = createTree(0, n);
     
-    // Обход дерева
-    printf("\nОбход слева направо: ");
-    inOrderTraversal(root);
-    printf("\n");
-    
-    // Вычисление характеристик
+    // Вычисление характеристик для таблицы
     int size = treeSize(root);
     int sum = checkSum(root);
     int height = treeHeight(root);
     double wHeight = weightedHeight(root, 1);
     double avgWeightedHeight = wHeight / AW[0][n];
     
-    // Вывод результатов
-    printf("\nХарактеристики дерева:\n");
-    printf("n=%d   Размер   Контр.Сумма   Высота   Средневзвеш.высота\n", n);
+    // Вывод таблицы
+    printf("\n");
+    printf("n=%d   Размер   Контр. Сумма    Высота  Средневзвеш.высота\n", n);
     printf("ДОП   %6d   %11d   %6d   %17.2f\n", 
            size, sum, height, avgWeightedHeight);
     
     // Проверка правильности алгоритма
     double matrixRatio = (double)AP[0][n] / AW[0][n];
-    printf("\nПроверка: AP[0,n]/AW[0,n] = %.2f\n", matrixRatio);
-    printf("Средневзвешенная высота = %.2f\n", avgWeightedHeight);
+    printf("\nПроверка правильности алгоритма:\n");
+    printf("AP[0,n]/AW[0,n] = %.6f\n", matrixRatio);
+    printf("Средневзвешенная высота = %.6f\n", avgWeightedHeight);
+    printf("Разница: %.6f\n", fabs(matrixRatio - avgWeightedHeight));
     
     return 0;
 }
