@@ -17,7 +17,6 @@ int AP[MAX_N+1][MAX_N+1];
 int AR[MAX_N+1][MAX_N+1];
 int weights[MAX_N];
 
-// Создание нового узла
 Node* createNode(int key, int weight) {
     Node* newNode = (Node*)malloc(sizeof(Node));
     newNode->key = key;
@@ -27,7 +26,6 @@ Node* createNode(int key, int weight) {
     return newNode;
 }
 
-// Вычисление матрицы весов AW
 void computeAW(int n) {
     int i, j;
     for (i = 0; i <= n; i++) {
@@ -38,11 +36,9 @@ void computeAW(int n) {
     }
 }
 
-// Вычисление матриц AP и AR
 void computeAPAR(int n) {
     int i, j, k, h;
     
-    // Инициализация
     for (i = 0; i <= n; i++) {
         for (j = 0; j <= n; j++) {
             AP[i][j] = 0;
@@ -50,21 +46,19 @@ void computeAPAR(int n) {
         }
     }
     
-    // h = 1 (поддеревья из одного ключа)
     for (i = 0; i < n; i++) {
         j = i + 1;
         AP[i][j] = AW[i][j];
         AR[i][j] = j;
     }
     
-    // h > 1 (поддеревья из h ключей)
     for (h = 2; h <= n; h++) {
         for (i = 0; i <= n - h; i++) {
             j = i + h;
-            int m = AR[i][j-1];
+
+            int m = AR[i][j-1];     
             int min_val = AP[i][m-1] + AP[m][j];
             
-            // Исправление: проверка границ для k
             int max_k = (AR[i+1][j] > 0) ? AR[i+1][j] : j;
             for (k = m+1; k <= max_k; k++) {
                 int x = AP[i][k-1] + AP[k][j];
@@ -80,7 +74,6 @@ void computeAPAR(int n) {
     }
 }
 
-// Рекурсивное построение дерева
 Node* createTree(int L, int R) {
     if (L < R) {
         int k = AR[L][R];
@@ -92,7 +85,6 @@ Node* createTree(int L, int R) {
     return NULL;
 }
 
-// Обход слева направо (in-order) - с ограничением вывода
 void inOrderTraversal(Node* root) {
     if (root != NULL) {
         inOrderTraversal(root->left);
@@ -101,27 +93,23 @@ void inOrderTraversal(Node* root) {
     }
 }
 
-// Вычисление размера дерева
 int treeSize(Node* root) {
     if (root == NULL) return 0;
     return 1 + treeSize(root->left) + treeSize(root->right);
 }
 
-// Вычисление контрольной суммы
 int checkSum(Node* root) {
     if (root == NULL) return 0;
     return root->key + checkSum(root->left) + checkSum(root->right);
 }
 
-// Вычисление высоты дерева
-int treeHeight(Node* root) {
+    int treeHeight(Node* root) {
     if (root == NULL) return 0;
     int leftHeight = treeHeight(root->left);
     int rightHeight = treeHeight(root->right);
     return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);
 }
 
-// Вычисление средневзвешенной высоты
 double weightedHeight(Node* root, int level) {
     if (root == NULL) return 0;
     return root->weight * level + 
@@ -129,7 +117,6 @@ double weightedHeight(Node* root, int level) {
            weightedHeight(root->right, level + 1);
 }
 
-// Вывод части матрицы (первые 10x10 элементов)
 void printMatrixPartial(int matrix[MAX_N+1][MAX_N+1], int n, char* name) {
     printf("\nМатрица %s (первые 10x10 элементов):\n", name);
     printf("i\\j");
@@ -149,23 +136,26 @@ void printMatrixPartial(int matrix[MAX_N+1][MAX_N+1], int n, char* name) {
         }
         printf("\n");
     }
-    printf("... (полная матрица %dx%d)\n", n+1, n+1);
 }
 
 int main() {
-    int n = 100;
+    int n = 10;
     srand(time(NULL));
     
-    printf("Генерация 100 случайных весов...\n");
     for (int i = 0; i < n; i++) {
         weights[i] = rand() % 100 + 1;
     }
     
+    printf("Ключи и веса вершин:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Ключ: %d, Вес: %d\n", i+1, weights[i]);
+    }
+    printf("\n");
+
     printf("\nВычисление матриц...\n");
     computeAW(n);
     computeAPAR(n);
     
-    // Вывод матриц (первые 10x10 элементов)
     printMatrixPartial(AW, n, "AW");
     printMatrixPartial(AP, n, "AP"); 
     printMatrixPartial(AR, n, "AR");
@@ -173,20 +163,18 @@ int main() {
     printf("\nПостроение дерева...\n");
     Node* root = createTree(0, n);
     
-    // Вычисление характеристик для таблицы
     int size = treeSize(root);
     int sum = checkSum(root);
     int height = treeHeight(root);
     double wHeight = weightedHeight(root, 1);
     double avgWeightedHeight = wHeight / AW[0][n];
     
-    // Вывод таблицы
+    
     printf("\n");
     printf("n=%d   Размер   Контр. Сумма    Высота  Средневзвеш.высота\n", n);
     printf("ДОП   %6d   %11d   %6d   %17.2f\n", 
            size, sum, height, avgWeightedHeight);
     
-    // Проверка правильности алгоритма
     double matrixRatio = (double)AP[0][n] / AW[0][n];
     printf("\nПроверка правильности алгоритма:\n");
     printf("AP[0,n]/AW[0,n] = %.6f\n", matrixRatio);
