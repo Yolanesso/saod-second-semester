@@ -1,10 +1,11 @@
 import React from "react";
-import A1A2 from "./Components/A1A2";
+import FanoTreeApp from "./Components/FanoTreeApp";
+import "./App.css";
 
 export default function App() {
   return (
-    <div>
-      <A1A2 />
+    <div className="app">
+      <FanoTreeApp />
     </div>
   );
 }
